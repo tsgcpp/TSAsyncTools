@@ -5,15 +5,15 @@ using Cysharp.Threading.Tasks;
 namespace TSAsyncTools
 {
     /// <summary>
-    /// 非同期によるループ処理
+    /// 遅延時間指定による非同期による処理
     /// </summary>
-    public class AsyncRepeater : IActivatable
+    public class TimeAsyncRunner : IRunner
     {
         private readonly Action _action;
 
-        private readonly int _firstDelayFrameCount;
+        private readonly TimeSpan _delayTimeSpan;
 
-        private readonly int _intervalDelayFrameCount;
+        private readonly bool _ignoreTimeScale;
 
         private readonly PlayerLoopTiming _timing;
 
@@ -25,38 +25,30 @@ namespace TSAsyncTools
         /// コンストラクタ
         /// </summary>
         /// <param name="action">ループ毎の処理</param>
-        /// <param name="firstDelayFrameCount">ループ開始時の遅延フレーム数</param>
-        /// <param name="intervalDelayFrameCount">ループ毎の遅延フレーム数</param>
+        /// <param name="delaySeconds">処理実行までの遅延秒数</param>
+        /// <param name="ignoreTimeScale">Time.timeScaleの値を無視設定(trueであれば無視)</param>
         /// <param name="timing">ループ処理を実施するタイミング(UniTaskを参照)</param>
         /// <param name="cancellationToken">キャンセル処理用CancellationToken</param>
-        public AsyncRepeater(
+        /// <summary>
+        public TimeAsyncRunner(
             Action action,
-            int firstDelayFrameCount = 0,
-            int intervalDelayFrameCount = 0,
+            float delaySeconds = 0f,
+            bool ignoreTimeScale = false,
             PlayerLoopTiming timing = PlayerLoopTiming.PreUpdate,
             CancellationToken cancellationToken = default) {
             _action = action;
-            _firstDelayFrameCount = firstDelayFrameCount;
-            _intervalDelayFrameCount = intervalDelayFrameCount;
+            _delayTimeSpan = TimeSpan.FromSeconds((double)delaySeconds);
+            _ignoreTimeScale = ignoreTimeScale;
             _timing = timing;
             _cancellationToken = cancellationToken;
         }
 
-        private bool _enabled = false;
-        public bool Enabled {
-            get => _enabled;
-            set {
-                if (_enabled == value) {
-                    return;
-                }
-
-                _enabled = value;
-
-                Loop();
-            }
-        }
-
-        private void Loop()
+        /// <summary>
+        /// 処理の予約
+        /// 
+        /// 処理実施までに複数回コールしても、指定のタイミングに1回のみ実施される。
+        /// </summary>
+        public void Run()
         {
             if (_cancellationToken.IsCancellationRequested) {
                 return;
@@ -67,18 +59,18 @@ namespace TSAsyncTools
             }
             _isRunning = true;
 
-            LoopAsync().Forget();
+            RunAsync().Forget();
         }
 
-        private async UniTask LoopAsync()
+        private async UniTask RunAsync()
         {
             try {
-                await UniTask.DelayFrame(_firstDelayFrameCount, _timing, _cancellationToken);
-
-                while (_enabled) {
-                    _action();
-                    await UniTask.DelayFrame(_intervalDelayFrameCount, _timing, _cancellationToken);
-                }
+                await UniTask.Delay(
+                    _delayTimeSpan,
+                    _ignoreTimeScale,
+                    _timing,
+                    _cancellationToken);
+                _action();
             } finally {
                 _isRunning = false;
             }

@@ -5,9 +5,9 @@ using Cysharp.Threading.Tasks;
 namespace TSAsyncTools
 {
     /// <summary>
-    /// 非同期による処理
+    /// 遅延フレーム指定による非同期による処理
     /// </summary>
-    public class AsyncRunner : IRunner
+    public class FrameAsyncRunner : IRunner
     {
         private readonly Action _action;
 
@@ -27,7 +27,7 @@ namespace TSAsyncTools
         /// <param name="timing">ループ処理を実施するタイミング(UniTaskを参照)</param>
         /// <param name="cancellationToken">キャンセル処理用CancellationToken</param>
         /// <summary>
-        public AsyncRunner(
+        public FrameAsyncRunner(
             Action action,
             int delayFrameCount = 0,
             PlayerLoopTiming timing = PlayerLoopTiming.PreUpdate,

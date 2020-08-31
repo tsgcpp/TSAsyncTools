@@ -8,7 +8,7 @@ using TSAsyncTools;
 
 namespace Tests
 {
-    public class AsyncLoopTest
+    public class FrameAsyncRepeaterTest
     {
         [UnityTest]
         public IEnumerator インスタンス生成後にEnabledをtrueにしない場合は処理が開始しないこと()
@@ -17,7 +17,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             yield return null;
@@ -34,7 +34,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -46,13 +46,13 @@ namespace Tests
         }
 
         [UnityTest]
-        public IEnumerator Enabledをtrueにした3フレーム後に処理が3回行われること()
+        public IEnumerator ループ毎の遅延フレームが0でEnabledをtrueにした後に3フレーム後に処理が3回行われること()
         {
             // setup
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -72,7 +72,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -92,7 +92,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -114,7 +114,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -138,7 +138,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -160,7 +160,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -180,7 +180,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 5, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 5, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -204,7 +204,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 3, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 3, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -227,7 +227,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             cts.Cancel();
@@ -247,7 +247,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
@@ -255,11 +255,12 @@ namespace Tests
             yield return null;
             yield return null;
             cts.Cancel();
-            yield return null;
-            yield return null;  // 停止を確認したいため余分に待機
 
             // then
             Assert.True(target.Enabled);
+            Assert.AreEqual(3, callCount);
+            yield return null;
+            yield return null;  // 停止を確認したいため余分に待機
             Assert.AreEqual(3, callCount);
         }
 
@@ -270,7 +271,7 @@ namespace Tests
             int callCount = 0;
             Action action = () => { callCount += 1; };
             var cts = new CancellationTokenSource();
-            var target = new AsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
+            var target = new FrameAsyncRepeater(action, 1, 0, PlayerLoopTiming.PreUpdate, cts.Token);
 
             // when
             target.Enabled = true;
